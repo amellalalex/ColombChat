@@ -13,3 +13,6 @@ class Peer:
             return None
         else:
             return msg
+    
+    def send(self, msg):
+        self.conn.send(bytes(msg, 'utf-8'))

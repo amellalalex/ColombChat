@@ -53,6 +53,8 @@ if __name__ == '__main__':
     accept_incoming_thread.start()
 
     while True:
-        pass
+        msg = input('>> ')
+        for peer in peers:
+            peer.send(msg)
 
     accept_incoming_thread.join()
