@@ -12,20 +12,21 @@ class Peer:
         self.lock = threading.Lock()
         
     def get(self):
-        self.lock.acquire(timeout=0.080)
-        msg = self.conn.recv(msglen)
-        self.lock.release()
-        if not msg:
+        try:
+            msg = self.conn.recv(msglen)
+            if not msg:
+                return None
+            else:
+                return msg
+        except ConnectionAbortedError:
+            print('ConnectionAbortedError, peer aborted.')
             return None
-        else:
-            return msg
-    
+        except ConnectionResetError:
+            print('ConnectionResetError, remote host forcibly closed connection.')
+            return None
+
     def send(self, msg):
-        self.lock.acquire()
         self.conn.send(bytes(msg, 'utf-8'))
-        self.lock.release()
         
     def close(self):
-        self.lock.acquire()
         self.conn.close()
-        self.lock.release()

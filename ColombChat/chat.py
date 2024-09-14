@@ -8,6 +8,7 @@ from peer import Peer
 from settings import *
 
 peers = list()
+status = True
 
 def accept_incoming():
     logging.info('Listening for incoming connections...')
@@ -81,6 +82,11 @@ def run_cmd(msg):
     elif tokens[0] == '/close':
         for peer in peers:
             peer.close()
+    # endif tokens[0] == '/close'
+    elif tokens[0] == '/quit' or tokens[0] == '/exit':
+        quit = True
+        exit(0)
+    # endif tokens[0] == '/quit' or tokens[0] == '/close' or tokens[0] == '/exit'
 
 if __name__ == '__main__':
     # Setup logging
@@ -99,7 +105,7 @@ if __name__ == '__main__':
     accept_incoming_thread = threading.Thread(target=accept_incoming)
     accept_incoming_thread.start()
 
-    while True:
+    while status:
         msg = input('>> ')
         if not process_msg_as_cmd(msg):
             for peer in peers:
