@@ -3,6 +3,7 @@ import time
 import logging
 import threading
 import sys
+import signal
 
 from peer import Peer
 from settings import *
@@ -12,7 +13,9 @@ globstatus = True
 listen_socket = socket.socket()
 hostname = socket.gethostname()
 
-# TODO: Handle Ctrl+C Interrupts as shutdown() call
+def interrupt(signal, frame):
+    logging.info('Interrupt detected. Shutting down...')
+    shutdown()
 
 def accept_incoming():
     global listen_socket
@@ -130,10 +133,16 @@ if __name__ == '__main__':
     accept_incoming_thread = threading.Thread(target=accept_incoming)
     accept_incoming_thread.start()
 
+    # Set interrupt signal to shutdown
+    signal.signal(signal.SIGINT, interrupt)
+    
     while globstatus:
-        msg = input('>> ')
-        if not process_msg_as_cmd(msg):
-            for peer in peers:
-                peer.send(msg)
+        try:
+            msg = input('>> ')
+            if not process_msg_as_cmd(msg):
+                for peer in peers:
+                    peer.send(msg)
+        except EOFError:
+            logging.info('Input cut unexpectedly short.')
 
     accept_incoming_thread.join()
