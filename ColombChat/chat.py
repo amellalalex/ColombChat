@@ -10,10 +10,14 @@ from settings import *
 peers = list()
 globstatus = True
 listen_socket = socket.socket()
+hostname = socket.gethostname()
+
+# TODO: Handle Ctrl+C Interrupts as shutdown() call
 
 def accept_incoming():
     global listen_socket
     global globstatus
+    global hostname
     
     logging.info('Listening for incoming connections...')
     # Setup listening socket
@@ -24,7 +28,8 @@ def accept_incoming():
     while globstatus:
         try:
             # Accept incoming peer connection
-            peer = Peer(listen_socket.accept())
+            conn, addr = listen_socket.accept()
+            peer = Peer(hostname, (conn, addr))
             logging.info('Received peer connection: '+str(peer.conn)+','+str(peer.addr))
             # Add peer to list of peers
             peers.append(peer)
@@ -41,9 +46,9 @@ def monitor_peer_for_incoming_msg(peer):
     while True:
         msg = peer.get()
         if msg != None:
-            logging.info('Received message from peer '+str(peer.addr)+': '+str(msg))
+            logging.info(str(peer.name)+'('+str(peer.addr)+'): '+str(msg))
         else:
-            logging.info('Peer returned None. Removing them.')
+            logging.info(str(peer.name)+'('+str(peer.addr)+' returned None. Removing them.')
             break
     # end while True
     peers.remove(peer)
@@ -79,7 +84,7 @@ def run_cmd(msg):
         s = socket.socket()
         s.connect((ip, PORT)) # fmt = /connect <ip> <PORT>
 
-        peer = Peer((s, (ip, PORT)))
+        peer = Peer(hostname, (s, (ip, PORT)))
         peers.append(peer)
         peers[-1].handle = threading.Thread(target=monitor_peer_for_incoming_msg, args=(peers[-1],))
         peers[-1].handle.start()
@@ -93,7 +98,7 @@ def run_cmd(msg):
         s = socket.socket()
         s.connect((ip, PORT))
 
-        peer = Peer((s, (ip, PORT)))
+        peer = Peer(hostname, (s, (ip, PORT)))
         peers.append(peer)
         peers[-1].handle = threading.Thread(target=monitor_peer_for_incoming_msg, args=(peers[-1],))
         peers[-1].handle.start()
