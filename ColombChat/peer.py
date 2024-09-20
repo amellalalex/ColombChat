@@ -6,7 +6,7 @@ import logging
 # WARNING! The mutex may be causing issues when trying to send/receive
 
 class Peer:
-    def __init__(self, hostname, conn_addr_pair=(None, '0.0.0.0')):
+    def __init__(self, hostname, conn_addr_pair):
         self.conn = conn_addr_pair[0]
         self.addr = conn_addr_pair[1]
         self.handle = None
