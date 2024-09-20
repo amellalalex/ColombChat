@@ -8,7 +8,7 @@ from peer import Peer
 from settings import *
 
 peers = list()
-status = True
+globstatus = True
 
 def accept_incoming():
     logging.info('Listening for incoming connections...')
@@ -49,6 +49,8 @@ def process_msg_as_cmd(msg):
         return False
 
 def run_cmd(msg):
+    global globstatus
+
     tokens = msg.split(' ')
     
     if tokens[0] == '/connect' and len(tokens) >= 3:
@@ -84,7 +86,7 @@ def run_cmd(msg):
             peer.close()
     # endif tokens[0] == '/close'
     elif tokens[0] == '/quit' or tokens[0] == '/exit':
-        quit = True
+        globstatus = False
         exit(0)
     # endif tokens[0] == '/quit' or tokens[0] == '/close' or tokens[0] == '/exit'
 
@@ -105,7 +107,7 @@ if __name__ == '__main__':
     accept_incoming_thread = threading.Thread(target=accept_incoming)
     accept_incoming_thread.start()
 
-    while status:
+    while globstatus:
         msg = input('>> ')
         if not process_msg_as_cmd(msg):
             for peer in peers:
