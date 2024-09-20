@@ -14,7 +14,7 @@ listen_socket = socket.socket()
 hostname = socket.gethostname()
 
 def interrupt(signal, frame):
-    logging.info('Interrupt detected. Shutting down...')
+    logging.debug('Interrupt detected. Shutting down...')
     shutdown()
 
 def accept_incoming():
@@ -22,10 +22,15 @@ def accept_incoming():
     global globstatus
     global hostname
     
-    logging.info('Listening for incoming connections...')
+    logging.debug('Listening for incoming connections...')
     # Setup listening socket
     listen_socket = socket.socket()
-    listen_socket.bind(('0.0.0.0', PORT))
+    try:
+        listen_socket.bind(('0.0.0.0', PORT))
+    except OSError:
+        logging.error('Could not bind port '+str(PORT)+'. It may already be in use or you are missing necessary permissions.')
+        shutdown()
+        sys.exit(1)
     listen_socket.listen()
     # Listen forever
     while globstatus:
@@ -33,7 +38,7 @@ def accept_incoming():
             # Accept incoming peer connection
             conn, addr = listen_socket.accept()
             peer = Peer(hostname, (conn, addr))
-            logging.info('Received peer connection: '+str(peer.conn)+','+str(peer.addr))
+            logging.debug('Received peer connection: '+str(peer.conn)+','+str(peer.addr))
             # Add peer to list of peers
             peers.append(peer)
             # Create peer monitoring thread 
@@ -41,18 +46,19 @@ def accept_incoming():
             peers[-1].handle = thread
             peers[-1].handle.start()
         except OSError:
-            logging.info('OSError, encountered on the listen_socket.')
+            logging.debug('OSError, encountered on the listen_socket.')
     # end while True
         
 def monitor_peer_for_incoming_msg(peer):
-    logging.info('Monitoring peer '+str(peer.addr)+' for incoming messages...')
+    logging.debug('Monitoring peer '+str(peer.addr)+' for incoming messages...')
+    logging.info('Peer '+peer.name.decode()+' has connected to you!')
     while True:
         msg = peer.get()
         if msg != None:
             logging.info(peer.name.decode()+': '+msg.decode())
             logging.debug(str(peer.name)+'('+str(peer.addr)+'): '+str(msg))
         else:
-            logging.info(str(peer.name)+'('+str(peer.addr)+' returned None. Removing them.')
+            logging.info(peer.name.decode()+' has disconnected.')
             logging.debug(str(peer.name)+'('+str(peer.addr)+' returned None. Removing them.')
             break
     # end while True
@@ -81,15 +87,19 @@ def run_cmd(msg):
 
     tokens = msg.split(' ')
     
+    # TODO: Combine both if statements for /connect together
+    
     if tokens[0] == '/connect' and len(tokens) >= 3:
         ip = tokens[1]
         PORT = int(tokens[2])
 
-        logging.info('Connecting to peer '+str((ip, PORT))+'.')
+        logging.debug('Connecting to peer '+str((ip, PORT))+'.')
         s = socket.socket()
         s.connect((ip, PORT)) # fmt = /connect <ip> <PORT>
 
         peer = Peer(hostname, (s, (ip, PORT)))
+        logging.info("You've connected to peer "+peer.name.decode()+"!")
+
         peers.append(peer)
         peers[-1].handle = threading.Thread(target=monitor_peer_for_incoming_msg, args=(peers[-1],))
         peers[-1].handle.start()
@@ -99,11 +109,13 @@ def run_cmd(msg):
         ip = split_addr[0]
         PORT = int(split_addr[1])
 
-        logging.info('Connecting to peer '+str(tokens[1])+'.')
+        logging.debug('Connecting to peer '+str(tokens[1])+'.')
         s = socket.socket()
         s.connect((ip, PORT))
 
         peer = Peer(hostname, (s, (ip, PORT)))
+        logging.info('Connected to peer '+peer.name.decode()+'!')
+
         peers.append(peer)
         peers[-1].handle = threading.Thread(target=monitor_peer_for_incoming_msg, args=(peers[-1],))
         peers[-1].handle.start()
@@ -143,6 +155,6 @@ if __name__ == '__main__':
                 for peer in peers:
                     peer.send(msg)
         except EOFError:
-            logging.info('Input cut unexpectedly short.')
+            logging.debug('Input cut unexpectedly short.')
 
     accept_incoming_thread.join()

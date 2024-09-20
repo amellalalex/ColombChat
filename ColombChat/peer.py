@@ -26,12 +26,12 @@ class Peer:
             else:
                 return msg
         except ConnectionAbortedError:
-            logging.info('ConnectionAbortedError, peer aborted.')
+            logging.debug('ConnectionAbortedError, peer aborted.')
             return None
         except ConnectionResetError:
-            logging.info('ConnectionResetError, remote host forcibly closed connection.')
+            logging.debug('ConnectionResetError, remote host forcibly closed connection.')
         except OSError:
-            logging.info('OSError, issue in the underlying socket driver.')
+            logging.debug('OSError, issue in the underlying socket driver.')
             return None
         
     def send(self, msg):
