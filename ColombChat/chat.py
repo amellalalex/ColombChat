@@ -46,9 +46,11 @@ def monitor_peer_for_incoming_msg(peer):
     while True:
         msg = peer.get()
         if msg != None:
-            logging.info(str(peer.name)+'('+str(peer.addr)+'): '+str(msg))
+            logging.info(peer.name.decode()+': '+msg.decode())
+            logging.debug(str(peer.name)+'('+str(peer.addr)+'): '+str(msg))
         else:
             logging.info(str(peer.name)+'('+str(peer.addr)+' returned None. Removing them.')
+            logging.debug(str(peer.name)+'('+str(peer.addr)+' returned None. Removing them.')
             break
     # end while True
     peers.remove(peer)
@@ -113,7 +115,7 @@ def run_cmd(msg):
 
 if __name__ == '__main__':
     # Setup logging
-    format = "%(asctime)s: %(message)s"
+    format = "(%(asctime)s) %(message)s"
     logging.basicConfig(
         format=format,
         level=logging.INFO,
