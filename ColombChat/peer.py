@@ -14,7 +14,7 @@ class Peer:
         
     def get(self):
         try:
-            msg = self.conn.recv(msglen)
+            msg = self.conn.recv(MSGLEN)
             if not msg:
                 return None
             else:

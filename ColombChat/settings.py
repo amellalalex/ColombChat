@@ -1,2 +1,2 @@
 PORT = 42069
-msglen = 4096
+MSGLEN = 4096
