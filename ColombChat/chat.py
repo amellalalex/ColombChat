@@ -183,8 +183,8 @@ if __name__ == '__main__':
     while globstatus:
         try:
             msg = input('')
-            logging.info(hostname+': '+msg)
             if not process_msg_as_cmd(msg):
+                logging.info(hostname+': '+msg)
                 for peer in peers:
                     peer.send(msg)
         except EOFError:
