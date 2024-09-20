@@ -131,8 +131,10 @@ def run_cmd(msg):
     # endif tokens[0] == '/connect' and len(tokens) >= 3
     elif tokens[0] == '/connect' and len(tokens) == 2:
         split_addr = tokens[1].split(':')
+        # Check whether port was actually specified with a colon
+        if len(split_addr) >= 2: # port specified
+            PORT = int(split_addr[1])
         ip = split_addr[0]
-        PORT = int(split_addr[1])
 
         logging.debug('Connecting to peer '+str(tokens[1])+'.')
         s = socket.socket()
@@ -180,7 +182,9 @@ if __name__ == '__main__':
     
     while globstatus:
         try:
-            msg = input('>> ')
+            msg = input('')
+            print('\r', end='')
+            logging.info(hostname+': '+msg)
             if not process_msg_as_cmd(msg):
                 for peer in peers:
                     peer.send(msg)
