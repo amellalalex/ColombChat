@@ -26,7 +26,7 @@ Run `chat.py` using installed Python interpreter or install one of the releases 
 Passing a port number to the script as a command-line argument will result in changing the listen port for incoming Peer connections to whatever is passed. So long as the port is not already bound by another process and the necessary permissions to use it are present, ColombChat will listen and operate under the default assumption that this is the chat port to use.
 
 ```
-python chat.py 42070
+python3 chat.py 42070
 ```
 
 This also means that when connecting to other peers, NOT specifying their listen port will result in the use of this port number _rather_ than the typical default port for ColombChat.
