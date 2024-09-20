@@ -80,6 +80,31 @@ def process_msg_as_cmd(msg):
         return True 
     else:
         return False
+    
+def print_help():
+    logging.info("""ColombChat Help:
+    0. Commands vs Messages:
+        - All commands in ColombChat start with a '/' character.
+        - Examples of this include '/connect' and '/quit' for starters.
+        - Anything without a '/' as the first character will be sent as a normal message to every connected Peer.
+    
+    1. Sending Messages:
+        - Write messages and hit [Enter] at any time.
+        - You will need to be connected to at least one Peer to exchange messages with another client.
+        
+    2. Connecting to a Peer: /connect <IP> [:port]
+        - Get to know the IP address of the Peer.
+        - If they've optionally chosen to specify a custom listening port, you'll need that, too.
+        - In your chat window, call the /connect command with the IP of the Peer and the port if needed.
+        - Hint: you can either enter the port after the IP as space-separated or with a colon (so as 'IP port' or 'IP:port'). Both are fine :-).
+        
+    3. Closing Peer connections: /close
+        - This command closes off all actively connected Peers.
+        - They will need to reconnect to you, or, you will need to reconnect to them.
+        
+    4. Quitting: /quit or /exit
+        - Closes all Peer connections and shuts the chat down.
+    """)
 
 def run_cmd(msg):
     global globstatus
@@ -126,6 +151,8 @@ def run_cmd(msg):
     # endif tokens[0] == '/close'
     elif tokens[0] == '/quit' or tokens[0] == '/exit':
         shutdown()
+    elif tokens[0] == '/help' or tokens[0] == '/?':
+        print_help()
     # endif tokens[0] == '/quit' or tokens[0] == '/close' or tokens[0] == '/exit'
 
 if __name__ == '__main__':
@@ -147,6 +174,9 @@ if __name__ == '__main__':
 
     # Set interrupt signal to shutdown
     signal.signal(signal.SIGINT, interrupt)
+    
+    # Welcome Message
+    logging.info('Welcome to ColombChat. Type /help for guidance.') 
     
     while globstatus:
         try:
