@@ -102,7 +102,7 @@ def print_help():
         - This command closes off all actively connected Peers.
         - They will need to reconnect to you, or, you will need to reconnect to them.
         
-    4. Quitting: /quit or /exit
+    4. Quitting: /quit or /exit or [Ctrl+C]
         - Closes all Peer connections and shuts the chat down.
     """)
 
