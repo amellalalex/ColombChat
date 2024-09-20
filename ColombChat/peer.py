@@ -1,6 +1,7 @@
 from settings import *
 import socket
 import threading
+import logging
 
 # WARNING! The mutex may be causing issues when trying to send/receive
 
@@ -19,10 +20,12 @@ class Peer:
             else:
                 return msg
         except ConnectionAbortedError:
-            print('ConnectionAbortedError, peer aborted.')
+            logging.info('ConnectionAbortedError, peer aborted.')
             return None
         except ConnectionResetError:
-            print('ConnectionResetError, remote host forcibly closed connection.')
+            logging.info('ConnectionResetError, remote host forcibly closed connection.')
+        except OSError:
+            logging.info('OSError, issue in the underlying socket driver.')
             return None
 
     def send(self, msg):
