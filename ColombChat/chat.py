@@ -14,7 +14,7 @@ def accept_incoming():
     logging.info('Listening for incoming connections...')
     # Setup listening socket
     s = socket.socket()
-    s.bind(('0.0.0.0', port))
+    s.bind(('0.0.0.0', PORT))
     s.listen()
     # Listen forever
     while True:
@@ -50,18 +50,19 @@ def process_msg_as_cmd(msg):
 
 def run_cmd(msg):
     global globstatus
+    global PORT
 
     tokens = msg.split(' ')
     
     if tokens[0] == '/connect' and len(tokens) >= 3:
         ip = tokens[1]
-        port = int(tokens[2])
+        PORT = int(tokens[2])
 
-        logging.info('Connecting to peer '+str((ip, port))+'.')
+        logging.info('Connecting to peer '+str((ip, PORT))+'.')
         s = socket.socket()
-        s.connect((ip, port)) # fmt = /connect <ip> <port>
+        s.connect((ip, PORT)) # fmt = /connect <ip> <PORT>
 
-        peer = Peer((s, (ip, port)))
+        peer = Peer((s, (ip, PORT)))
         peers.append(peer)
         peers[-1].handle = threading.Thread(target=monitor_peer_for_incoming_msg, args=(peers[-1],))
         peers[-1].handle.start()
@@ -69,13 +70,13 @@ def run_cmd(msg):
     elif tokens[0] == '/connect' and len(tokens) == 2:
         split_addr = tokens[1].split(':')
         ip = split_addr[0]
-        port = int(split_addr[1])
+        PORT = int(split_addr[1])
 
         logging.info('Connecting to peer '+str(tokens[1])+'.')
         s = socket.socket()
-        s.connect((ip, port))
+        s.connect((ip, PORT))
 
-        peer = Peer((s, (ip, port)))
+        peer = Peer((s, (ip, PORT)))
         peers.append(peer)
         peers[-1].handle = threading.Thread(target=monitor_peer_for_incoming_msg, args=(peers[-1],))
         peers[-1].handle.start()
@@ -99,9 +100,9 @@ if __name__ == '__main__':
         datefmt="%H:%M:%S"
     )
     
-    # Override default port is command line arg present 
+    # Override default PORT is command line arg present 
     if len(sys.argv) > 1:
-        port = int(sys.argv[1])
+        PORT = int(sys.argv[1])
     
     # Start accepting incoming connections on thread 
     accept_incoming_thread = threading.Thread(target=accept_incoming)

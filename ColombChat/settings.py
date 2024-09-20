@@ -1,2 +1,2 @@
-port = 42069
+PORT = 42069
 msglen = 4096
