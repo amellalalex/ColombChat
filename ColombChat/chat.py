@@ -9,24 +9,31 @@ from settings import *
 
 peers = list()
 globstatus = True
+listen_socket = socket.socket()
 
 def accept_incoming():
+    global listen_socket
+    global globstatus
+    
     logging.info('Listening for incoming connections...')
     # Setup listening socket
-    s = socket.socket()
-    s.bind(('0.0.0.0', PORT))
-    s.listen()
+    listen_socket = socket.socket()
+    listen_socket.bind(('0.0.0.0', PORT))
+    listen_socket.listen()
     # Listen forever
-    while True:
-        # Accept incoming peer connection
-        peer = Peer(s.accept())
-        logging.info('Received peer connection: '+str(peer.conn)+','+str(peer.addr))
-        # Add peer to list of peers
-        peers.append(peer)
-        # Create peer monitoring thread 
-        thread = threading.Thread(target=monitor_peer_for_incoming_msg, args=(peers[-1],))
-        peers[-1].handle = thread
-        peers[-1].handle.start()
+    while globstatus:
+        try:
+            # Accept incoming peer connection
+            peer = Peer(listen_socket.accept())
+            logging.info('Received peer connection: '+str(peer.conn)+','+str(peer.addr))
+            # Add peer to list of peers
+            peers.append(peer)
+            # Create peer monitoring thread 
+            thread = threading.Thread(target=monitor_peer_for_incoming_msg, args=(peers[-1],))
+            peers[-1].handle = thread
+            peers[-1].handle.start()
+        except OSError:
+            logging.info('OSError, encountered on the listen_socket.')
     # end while True
         
 def monitor_peer_for_incoming_msg(peer):
@@ -40,6 +47,16 @@ def monitor_peer_for_incoming_msg(peer):
             break
     # end while True
     peers.remove(peer)
+    
+def close_all_peers():
+    for peer in peers:
+        peer.close()
+
+def shutdown():
+    global globstatus
+    globstatus = False
+    close_all_peers()
+    listen_socket.close()
 
 def process_msg_as_cmd(msg):
     if len(msg) > 1 and msg[0] == '/':
@@ -83,12 +100,10 @@ def run_cmd(msg):
         
     # endif tokens[0] == '/connect' and len(tokens) == 2
     elif tokens[0] == '/close':
-        for peer in peers:
-            peer.close()
+        close_all_peers()
     # endif tokens[0] == '/close'
     elif tokens[0] == '/quit' or tokens[0] == '/exit':
-        globstatus = False
-        exit(0)
+        shutdown()
     # endif tokens[0] == '/quit' or tokens[0] == '/close' or tokens[0] == '/exit'
 
 if __name__ == '__main__':
