@@ -183,7 +183,6 @@ if __name__ == '__main__':
     while globstatus:
         try:
             msg = input('')
-            print('\r', end='')
             logging.info(hostname+': '+msg)
             if not process_msg_as_cmd(msg):
                 for peer in peers:
